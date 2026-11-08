@@ -12,7 +12,7 @@
     <title>速算模考台 · 资料分析专项</title>
     <style id="home-visibility-guard">
       /* React 速算与总览是两个界面层，不让后台欢迎页在初始化时抢先显示。
-         必须放在 head：总览的样式和 DOM 要到 DOMContentLoaded 才创建。 */
+         必须放在 head：总览的样式和 DOM 由后面的启动脚本创建。 */
       body:not(.kao-suan) #root { display: none !important; }
       /* React 也可能晚于总览挂载；新版欢迎页改造完成后再显示，避免旧布局闪现。 */
       body.kao-suan #root .welcome-page:not([data-kao-redesigned="1"]) {
@@ -33,7 +33,7 @@ Error generating stack: `+i.message+`
 `).replace(/\n{3,}/g,`
 
 `).trim()}function JD(a){const c=[],u=[],r=/参考答案|答案与解析|答案解析|核心思路|参考解析|答案[：:]/i,s=a.search(r);if(s<0)return{answers:c,explanations:u};const l=a.slice(s),d=/(?:^|\n)\s*(?:(\d+)[\.、．:：\-\s]+)?([A-Da-d])\s*(?:【解析】|解析[：:]?|\.|、)?\s*([^\n]*)/g;let f;const h=[];for(;(f=d.exec(l))!==null;){const U=f[1]?parseInt(f[1],10):void 0,D=f[2].toUpperCase();if(!To.includes(D))continue;const _=(f[3]||"").trim();/参考|答案与|核心思路/.test(_)&&!_.includes("解析")||h.push({idx:U,ans:D,exp:_?`【解析】${_.replace(/^【解析】/,"")}`:""})}if(h.length===0){const U=l.match(/[：:]\s*([A-Da-d]{5,})/);if(U){for(const D of U[1].toUpperCase())To.includes(D)&&(c.push(D),u.push(""));return{answers:c,explanations:u}}}h.some(U=>U.idx!==void 0)&&h.sort((U,D)=>(U.idx??0)-(D.idx??0));for(const U of h)c.push(U.ans),u.push(U.exp);return{answers:c,explanations:u}}function $D(a,c,u,r){const s=a.trim();if(!s)return null;const l=/^(\d+)[\.、．\s]+(?:【([^】]*)】)?\s*/,d=s.match(l);if(!d)return null;let f="",h="";const g=(d[2]||"").trim();if(g){const m=g.split("|").map(x=>x.trim());f=m[0]||"",m[1]&&(h=m[1].replace(/^技巧[：:]\s*/,"").trim())}let U=s.slice(d[0].length).trim();let inAns=null,inExp="";const cm=U.match(/(?:^|\n)[ \t]*(?:【解析】|【详解】|【答案】|解析[：:]|详解[：:]|答案[：:]|参考答案|参考解析|答案解析|核心思路|解题思路)[\s\S]*$|(?:^|[\s\u00a0])(?:答案|参考答案|解析|详解)[：:][\s\S]*$/);if(cm){const tl=U.slice(cm.index);U=U.slice(0,cm.index).replace(/[\s\u00a0]+$/,"");const am=tl.match(/答案\s*[:：]?\s*[（(]?\s*([A-Da-d])/);if(am)inAns=am[1].toUpperCase();if(!am){const sm=tl.match(/选\s*([A-Da-d])\s*[。，,；;]?/);if(sm)inAns=sm[1].toUpperCase()}const em=tl.replace(/^\s*[【\[]?(?:参考)?答案[】\]]?\s*[:：]?\s*[（(]?\s*[A-Da-d]?[）)]?[，,。；;\s]*/,"").replace(/^\s*[【\[]?解析[】\]]?[：:]?\s*/,"").replace(/^\s*[【\[]?详解[】\]]?[：:]?\s*/,"").trim();if(em)inExp=em}const cz=function(E){return E.replace(/[ \t\u00a0]*[（(](?:答案|参考答案)[：:]?\s*[A-Da-d]?[）)]?$/,"").replace(/[ \t\u00a0]*答案[：:]?\s*[A-Da-d]?[）)]?$/,"").replace(/\s*[【\[]解析[】\]]?[：:]?[\s\S]*$/,"").replace(/\s*[（(]解析[：:][\s\S]*$/,"").replace(/\s*解析[：:][\s\S]*$/,"").trim()};const D=/(?:^|\n)\s*([A-Da-d])[\.、．:：]\s*/g,_=[];let y;for(;(y=D.exec(U))!==null;){const m=y[1].toUpperCase();To.includes(m)&&_.push({key:m,start:y.index,contentStart:y.index+y[0].length})}const T={A:"",B:"",C:"",D:""};if(_.length>=2){const m=U.slice(0,_[0].start).trim();for(let x=0;x<_.length;x++){const b=x+1<_.length?_[x+1].start:U.length,E=U.slice(_[x].contentStart,b).trim();T[_[x].key]=cz(E)}return{id:c,type:f||"综合",tip:h,stem:m.replace(/\n+/g,`\n`).trim()||`第 ${c} 题`,options:T,answer:u||inAns||"A",explanation:r||inExp}}const v=U.match(/([A-D])[\.、．]\s*([^\n]+?)(?=\s+[A-D][\.、．]|$)/gi);if(v&&v.length>=2){const m=U.search(/[A-Da-d][\.、．]/),x=m>=0?U.slice(0,m).trim():U;for(const b of v){const E=b.match(/([A-Da-d])[\.、．]\s*(.+)/);E&&(T[E[1].toUpperCase()]=cz(E[2]))}return{id:c,type:f||"综合",tip:h,stem:x||`第 ${c} 题`,options:T,answer:u||inAns||"A",explanation:r||inExp}}return null}function PD(a){const c=/(?:^|\n)\s*(?:参考答案|答案与解析|答案解析|核心思路核对|参考解析)\b/,u=a.search(c),r=u>=0?a.slice(0,u):a,s=[],l=/(?:^|\n)(\d{1,3})[\.、．]\s*(?=【|[^\d])/g,d=[];let f;for(;(f=l.exec(r))!==null;)d.push(f.index===0?0:f.index+1);if(d.length===0)return[];for(let h=0;h<d.length;h++){const g=d[h],U=h+1<d.length?d[h+1]:r.length;s.push(r.slice(g,U).trim())}return s}function ex(a){const c=a.split(`
-`).map(l=>l.trim()).filter(Boolean);let u="速算专项练习",r="";c.length>0&&!/^\d+[\.、．]/.test(c[0])&&(u=c[0].slice(0,80));const s=c.find(l=>/说明|本卷|共\d+题/.test(l));return s&&(r=s),{title:u,description:r}}function tx(a){const c=(window.ZZ_PRECLEAN||function(x){return x})(KD(a)),{title:u,description:r}=ex(c),{answers:s,explanations:l}=JD(c),d=PD(c),f=[];return d.forEach((h,g)=>{const U=s[g]??null,D=l[g]??"",_=$D(h,g+1,U,D);_&&(_.id=f.length+1,f.push(_))}),f.forEach((h,g)=>{s[g]&&(h.answer=s[g]),l[g]&&(h.explanation=l[g])}),f.forEach(h=>{const zl=window.ZZ_CLEAN_LATEX||function(x){return x};h.stem=zl(h.stem);for(const zzK9 in h.options)h.options[zzK9]=zl(h.options[zzK9]);h.explanation&&(h.explanation=zl(h.explanation))}),{title:(window.ZZ_CLEAN_LATEX||function(x){return x})(u),description:(window.ZZ_CLEAN_LATEX||function(x){return x})(r),questions:f}}async function dm(a){const c=await QD(()=>Promise.resolve().then(()=>S_),void 0,import.meta.url),u=await a.arrayBuffer();return(await c.extractRawText({arrayBuffer:u})).value}function nx(a){const c=[];a.questions.length===0&&c.push("未识别到题目，请检查格式是否为「1.【题型】题干 A. B. C. D.」");const u=a.questions.filter(s=>!s.explanation&&s.answer==="A"),r=a.questions.some(s=>s.explanation);return!r&&a.questions.length>0&&c.push("未识别到参考答案区，默认答案可能不准确，建议粘贴含「参考答案」的完整文本"),a.questions.forEach(s=>{const l=To.filter(d=>!s.options[d]);l.length&&c.push(`第 ${s.id} 题缺少选项：${l.join(", ")}`)}),u.length,c}function ix({onParsed:a,onBack:c,onSample:u}){const r=qe.useRef(null),[s,l]=qe.useState(""),[d,f]=qe.useState(!1),[h,g]=qe.useState(""),[U,D]=qe.useState([]),[_,y]=qe.useState(null),[T,v]=qe.useState(""),m=(E,B="")=>{g(""),D([]);try{const C=tx(E),F=nx(C);if(D(F),C.questions.length===0){y(null),g("没有识别到题目。请确认格式含「1.【题型|技巧】题干」与 A/B/C/D 选项，以及文末参考答案。");return}y(C),B&&v(B)}catch(C){y(null),g(C instanceof Error?C.message:"解析失败")}},x=async E=>{if(E){f(!0),g(""),v(E.name);try{const B=E.name.toLowerCase();if(B.endsWith(".docx")){const C=await dm(E);l(C),m(C,E.name)}else if(B.endsWith(".doc"))g("暂不支持 .doc 老格式，请另存为 .docx，或直接粘贴文本内容。"),y(null);else if(B.endsWith(".txt")||B.endsWith(".md")){const C=await E.text();l(C),m(C,E.name)}else try{const C=await dm(E);l(C),m(C,E.name)}catch{const C=await E.text();l(C),m(C,E.name)}}catch{g("文件读取失败。可改用下方文本粘贴。"),y(null)}finally{f(!1)}}},b=_?_.questions.filter(E=>E.explanation||E.answer).length:0;return j.jsxs("div",{className:"page import-page",children:[j.jsxs("header",{className:"sub-header",children:[j.jsx("button",{type:"button",className:"btn btn-text",onClick:c,children:"← 返回"}),j.jsx("h1",{children:"导入题库"}),j.jsx("button",{type:"button",className:"btn btn-text",onClick:u,children:"示例卷"})]}),j.jsxs("div",{className:"import-layout",children:[j.jsxs("section",{className:"panel",children:[j.jsx("h2",{className:"panel-title",children:"上传 Word"}),j.jsx("p",{className:"panel-desc",children:"支持 .docx。若解析异常，请复制全文到右侧文本框。"}),j.jsxs("div",{className:`dropzone ${d?"busy":""}`,onClick:()=>r.current?.click(),onDragOver:E=>{E.preventDefault(),E.currentTarget.classList.add("over")},onDragLeave:E=>E.currentTarget.classList.remove("over"),onDrop:E=>{E.preventDefault(),E.currentTarget.classList.remove("over");const B=E.dataTransfer.files?.[0];B&&x(B)},role:"button",tabIndex:0,onKeyDown:E=>{(E.key==="Enter"||E.key===" ")&&r.current?.click()},children:[j.jsx("div",{className:"drop-icon",children:"📄"}),j.jsx("div",{className:"drop-title",children:d?"正在解析…":"点击或拖拽文件到此处"}),j.jsx("div",{className:"drop-sub",children:T||"docx / txt"}),j.jsx("input",{ref:r,type:"file",accept:".docx,.txt,.md,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain",hidden:!0,onChange:E=>{x(E.target.files?.[0]??null)}})]}),j.jsxs("div",{className:"format-tip",children:[j.jsx("div",{className:"tip-title",children:"推荐格式"}),j.jsx("pre",{className:"tip-code",children:`卷名
+`).map(l=>l.trim()).filter(Boolean);let u="速算专项练习",r="";c.length>0&&!/^\d+[\.、．]/.test(c[0])&&(u=c[0].slice(0,80));const s=c.find(l=>/说明|本卷|共\d+题/.test(l));return s&&(r=s),{title:u,description:r}}function tx(a){const c=(window.ZZ_PRECLEAN||function(x){return x})(KD(a)),{title:u,description:r}=ex(c),{answers:s,explanations:l}=JD(c),d=PD(c),f=[];return d.forEach((h,g)=>{const U=s[g]??null,D=l[g]??"",_=$D(h,g+1,U,D);_&&(_.id=f.length+1,f.push(_))}),f.forEach((h,g)=>{s[g]&&(h.answer=s[g]),l[g]&&(h.explanation=l[g])}),f.forEach(h=>{const zl=window.ZZ_CLEAN_LATEX||function(x){return x};h.stem=zl(h.stem);for(const zzK9 in h.options)h.options[zzK9]=zl(h.options[zzK9]);h.explanation&&(h.explanation=zl(h.explanation))}),{title:(window.ZZ_CLEAN_LATEX||function(x){return x})(u),description:(window.ZZ_CLEAN_LATEX||function(x){return x})(r),questions:f}}async function dm(a){const c=await QD(()=>Promise.resolve().then(()=>S_),void 0,import.meta.url),u=await a.arrayBuffer();return(await c.extractRawText({arrayBuffer:u})).value}function nx(a){const c=[];a.questions.length===0&&c.push("未识别到题目，请检查格式是否为「1.【题型】题干 A. B. C. D.」");const u=a.questions.filter(s=>!s.explanation&&s.answer==="A"),r=a.questions.some(s=>s.explanation);return!r&&a.questions.length>0&&c.push("未识别到参考答案区，默认答案可能不准确，建议粘贴含「参考答案」的完整文本"),a.questions.forEach(s=>{const l=To.filter(d=>!s.options[d]);l.length&&c.push(`第 ${s.id} 题缺少选项：${l.join(", ")}`)}),u.length,c}function ix({onParsed:a,onBack:c,onSample:u}){const r=qe.useRef(null),[s,l]=qe.useState(""),[d,f]=qe.useState(!1),[h,g]=qe.useState(""),[U,D]=qe.useState([]),[_,y]=qe.useState(null),[T,v]=qe.useState(""),m=(E,B="")=>{g(""),D([]);try{const C=tx(E),F=nx(C);if(D(F),C.questions.length===0){y(null),g("没有识别到题目。请确认格式含「1.【题型|技巧】题干」与 A/B/C/D 选项，以及文末参考答案。");return}y(C),B&&v(B)}catch(C){y(null),g(C instanceof Error?C.message:"解析失败")}},x=async E=>{if(E){f(!0),g(""),v(E.name);try{const B=E.name.toLowerCase();if(B.endsWith(".docx")){const C=await dm(E);l(C),m(C,E.name)}else if(B.endsWith(".doc"))g("暂不支持 .doc 老格式，请另存为 .docx，或直接粘贴文本内容。"),y(null);else if(B.endsWith(".txt")||B.endsWith(".md")){const C=await E.text();l(C),m(C,E.name)}else try{const C=await dm(E);l(C),m(C,E.name)}catch{const C=await E.text();l(C),m(C,E.name)}}catch{g("文件读取失败。可改用下方文本粘贴。"),y(null)}finally{f(!1)}}},b=_?_.questions.filter(E=>E.explanation||E.answer).length:0;return j.jsxs("div",{className:"page import-page",children:[j.jsxs("header",{className:"sub-header",children:[j.jsx("button",{type:"button",className:"btn btn-text",onClick:c,children:"← 返回"}),j.jsx("h1",{children:"导入题库"}),j.jsx("button",{type:"button",className:"btn btn-text",onClick:u,children:"示例卷"})]}),j.jsxs("div",{className:"import-layout",children:[j.jsxs("section",{className:"panel",children:[j.jsx("h2",{className:"panel-title",children:"上传 Word"}),j.jsx("p",{className:"panel-desc",children:"支持 .docx。若解析异常，请复制全文到右侧文本框。"}),j.jsxs("div",{className:`dropzone ${d?"busy":""}`,onClick:()=>r.current?.click(),onDragOver:E=>{E.preventDefault(),E.currentTarget.classList.add("over")},onDragLeave:E=>E.currentTarget.classList.remove("over"),onDrop:E=>{E.preventDefault(),E.currentTarget.classList.remove("over");const B=E.dataTransfer.files?.[0];B&&x(B)},role:"button",tabIndex:0,onKeyDown:E=>{(E.key==="Enter"||E.key===" ")&&r.current?.click()},children:[j.jsx("div",{className:"drop-icon",children:"📄"}),j.jsx("div",{className:"drop-title",children:d?"正在解析…":"点击或拖拽文件到此处"}),j.jsx("div",{className:"drop-sub",children:T||"docx / txt"}),j.jsx("input",{ref:r,type:"file",accept:".docx,.txt,.md,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown",hidden:!0,onChange:E=>{x(E.target.files?.[0]??null)}})]}),j.jsxs("div",{className:"format-tip",children:[j.jsx("div",{className:"tip-title",children:"推荐格式"}),j.jsx("pre",{className:"tip-code",children:`卷名
 说明：本卷共N题…
 1.【题型 | 技巧：xxx】
 题干…
@@ -2223,11 +2223,8 @@ Character number: `+c.characterNumber},a.prototype.lineNumber=function(){return 
     setInterval(function () { safeRun(); }, 1500);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  // 脚本位于 body 内，依赖节点已存在，不等待外部资源或模块完成。
+  init();
 })();
 
 </script>
@@ -3351,9 +3348,9 @@ window.SF_BUILTIN_TXT = "# 📊 资料分析「找数点选」专项训练题库
       '<div class="page import-page">' + headerBar('导入速找题库') +
       '<div class="import-layout">' +
       '<section class="panel"><h2 class="panel-title">上传文件</h2>' +
-      '<div class="dropzone" data-sf="drop"><div class="drop-icon">📄</div><div class="drop-title">拖入 .txt / .md / .json</div>' +
+      '<div class="dropzone" data-sf="drop" style="position:relative"><div class="drop-icon">📄</div><div class="drop-title">拖入 .txt / .md / .json</div>' +
       '<div class="drop-sub">或点击选择文件。Word 请另存 txt，或把全文粘到右侧。</div>' +
-      '<input type="file" accept=".txt,.md,.text,.markdown,.json" hidden data-sf="file"></div>' +
+      '<input type="file" accept=".txt,.md,.text,.markdown,.json,text/plain,text/markdown,application/json" aria-label="选择本地题库文件" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer" data-sf="file"></div>' +
       '<div class="format-tip"><div class="tip-title">推荐格式（单题 / 共用材料 / JSON）</div>' +
       '<pre class="tip-code">## 材料一\n**【材料】** 共用段落…产值**100**亿元\n\n## 第1题\n**练习点：现期比重**\n**【小题】** …？\n**【需要点选的数字】**\n&gt; `100`、`400`\n**【解析】**\n\nJSON: {"title":"卷名","questions":[{"stem":"","material":"","answers":["100"],"type":"现期比重"}]}</pre></div></section>' +
       '<section class="panel"><h2 class="panel-title">粘贴文本</h2>' +
@@ -3434,7 +3431,7 @@ window.SF_BUILTIN_TXT = "# 📊 资料分析「找数点选」专项训练题库
       var blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
       var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (state.bankTitle || '速找题库') + '.json'; a.click();
     });
-    drop.addEventListener('click', function () { file.click(); });
+    // 使用用户直接点击的原生 file input；不再由父容器二次触发 click。
     drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('over'); });
     drop.addEventListener('dragleave', function () { drop.classList.remove('over'); });
     drop.addEventListener('drop', function (e) {
@@ -3461,6 +3458,10 @@ window.SF_BUILTIN_TXT = "# 📊 资料分析「找数点选」专项训练题库
       render();
       toast('已读入 ' + f.name);
     };
+    reader.onerror = function () {
+      toast('无法读取文件，请先将文件下载到本机，再选择导入；也可直接粘贴文本');
+    };
+    reader.onabort = function () { toast('文件读取已取消，可重新选择本地文件'); };
     reader.readAsText(f, 'utf-8');
   }
 
@@ -4277,14 +4278,14 @@ window.SF_BUILTIN_TXT = "# 📊 资料分析「找数点选」专项训练题库
     window.SF_PARSE = parseFindBank;
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  // body 已存在，立即启用入口，文件选择不依赖网络加载状态。
+  init();
 })();
 
 </script>
 <!-- SF-FIND-END -->
 
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
+<!-- 离线版不加载外部统计脚本，避免网络请求阻塞模块启动。 -->
 <!-- ==================================================================
   RSPX · 全站响应式修正层 v1.1（追加在 HTML 末尾，优先级最高）
   覆盖四个界面层：#root(React) / #zz-*(悬浮面板) / #sf-root(速找) / #kao-hub(总览)
