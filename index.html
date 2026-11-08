@@ -1570,7 +1570,6 @@ Character number: `+c.characterNumber},a.prototype.lineNumber=function(){return 
       // 过滤列表
       var filtered = list.map(function (w, i) { return { w: w, i: i }; }).filter(function (x) {
         if (_wrongFilter !== 'all' && (x.w.type || '综合') !== _wrongFilter) return false;
-        if (_wrongQuery && (x.w.stem || '').indexOf(_wrongQuery) === -1) return false;
         return true;
       });
       var items = filtered.map(function (x) {
@@ -1597,7 +1596,8 @@ Character number: `+c.characterNumber},a.prototype.lineNumber=function(){return 
         '<button class="zz-btn zz-btn-p" data-zz-retry="1">🔁 重练错题（' + list.length + '题）</button>' +
         '<button class="zz-btn zz-btn-s" data-zz-exp-now="1">📤 导出错题</button>' +
         '<button class="zz-btn zz-btn-r" data-zz-clear="1">🗑 清空错题本</button>' +
-        '</div>' + items;
+        '</div><div data-zz-wrong-list>' + items + '</div>' +
+        '<div class="zz-empty" data-zz-search-empty style="display:none">没有符合筛选的错题</div>';
     }
     panel.innerHTML = head + '<div class="zz-body">' + body + '</div>';
     $('[data-zz-close]', panel).addEventListener('click', closePanel);
@@ -1612,7 +1612,26 @@ Character number: `+c.characterNumber},a.prototype.lineNumber=function(){return 
     });
     // 搜索
     var sq = $('#zz-wrong-search', panel);
-    if (sq) sq.addEventListener('input', function () { _wrongQuery = sq.value.trim(); renderWrong(); });
+    function filterWrongSearch() {
+      var visible = 0;
+      $$('[data-zz-wi]', panel).forEach(function (card) {
+        var item = list[Number(card.getAttribute('data-zz-wi'))];
+        var show = !_wrongQuery || (item.stem || '').indexOf(_wrongQuery) !== -1;
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      var empty = $('[data-zz-search-empty]', panel);
+      if (empty) empty.style.display = visible ? 'none' : '';
+      var resultList = $('[data-zz-wrong-list]', panel);
+      if (resultList) resultList.style.display = visible ? '' : 'none';
+    }
+    if (sq) {
+      sq.addEventListener('input', function () {
+        _wrongQuery = sq.value.trim();
+        filterWrongSearch();
+      });
+      filterWrongSearch();
+    }
     // 删除
     $$('[data-zz-del]', panel).forEach(function (btn) {
       btn.addEventListener('click', function (e) {
@@ -3655,18 +3674,25 @@ window.SF_BUILTIN_TXT = "# 📊 资料分析「找数点选」专项训练题库
     var qsec = fmtClock(currentQElapsed());
     $$('[data-sf="qtime"]', root).forEach(function (qt) { qt.textContent = qsec; });
   }
+  function updateExamClock() {
+    if (state.page !== 'exam') return;
+    if (state.setup.countdown) {
+      // 浏览器在后台会节流 interval；与速算一样按真实截止时间计算，不能每次回调减一。
+      state.remain = Math.max(0, Math.ceil((state.deadline - Date.now()) / 1000));
+      if (state.remain <= 0) { finishExam(true); return; }
+    }
+    paintClocks();
+  }
   function startTick() {
     stopTick();
-    paintClocks();
-    state.tick = setInterval(function () {
-      if (state.page !== 'exam') return;
-      if (state.setup.countdown) {
-        state.remain -= 1;
-        if (state.remain <= 0) { state.remain = 0; finishExam(true); return; }
-      }
-      paintClocks();
-    }, 1000);
+    state.deadline = state.setup.countdown
+      ? state.startedAt + state.setup.minutes * 60000 : null;
+    updateExamClock();
+    if (state.page === 'exam') state.tick = setInterval(updateExamClock, 1000);
   }
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) updateExamClock();
+  });
   function timerClass(remain, total) {
     var r = remain / Math.max(1, total);
     if (r <= 0.1) return 'zz-ct-danger';
@@ -4274,6 +4300,11 @@ window.SF_BUILTIN_TXT = "# 📊 资料分析「找数点选」专项训练题库
 <style id="rspx-layer" data-layer="responsive-hardening">
 /* 组卷控件：网格/滑块允许收缩，数字框不挤出窄屏，触屏保留原生拖动。 */
 #sf-root .setup-grid > *, #sf-root .setup-page .field { min-width: 0; }
+/* 起始页标题不能因内联 nowrap 在 320px 手机溢出。 */
+#sf-root .gate h1 { white-space: normal !important; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) {
+  .zz-ct-danger, .sf-num.miss { animation: none !important; }
+}
 #sf-root .setup-page .field-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(4.5rem, 5.5rem);
