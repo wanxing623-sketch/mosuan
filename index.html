@@ -3497,16 +3497,42 @@ window.SF_BUILTIN_TXT = "# 📊 资料分析「找数点选」专项训练题库
     $$('[data-sf-tf]', root).forEach(function (b) {
       b.addEventListener('click', function () { state.setup.typeFilter = b.getAttribute('data-sf-tf') || ''; render(); });
     });
+    // 与速算的状态更新一样保留输入节点；整页 render 会中断滑块拖动和键盘焦点。
+    function updateReady() {
+      $('.ready-num', root).textContent = previewPaper().length;
+    }
+    function syncNumber(key, source) {
+      var fields = key === 'count' ? ['count', 'countn'] :
+        key === 'minutes' ? ['minutes', 'minutesn'] : [key];
+      fields.forEach(function (name) {
+        var input = $('[data-sf="' + name + '"]', root);
+        if (input && input !== source) input.value = state.setup[key];
+      });
+    }
     function num(sel, key, min, max) {
       var a = $(sel, root); if (!a) return;
-      a.addEventListener('input', function () {
-        var v = Number(a.value); if (!isFinite(v)) return;
-        state.setup[key] = Math.max(min, Math.min(max, v));
-        if (key === 'minutes') {
-          $$('[data-sf="minutes"],[data-sf="minutesn"]', root).forEach(function (el) { el.value = state.setup.minutes; });
+      a.setAttribute('step', '1');
+      if (a.type === 'number') a.setAttribute('inputmode', 'numeric');
+      function update(commit) {
+        // 编辑时允许暂时清空、输入多位数；失焦后才回填合法整数。
+        var v = a.value === '' ? NaN : Number(a.value);
+        if (isFinite(v)) state.setup[key] = Math.max(min, Math.min(max, Math.floor(v)));
+        if (commit) {
+          if (key === 'from' && state.setup.from > state.setup.to) {
+            state.setup.to = state.setup.from;
+            syncNumber('to');
+          } else if (key === 'to' && state.setup.to < state.setup.from) {
+            state.setup.from = state.setup.to;
+            syncNumber('from');
+          }
+          a.value = state.setup[key];
         }
-        if (key === 'count' || key === 'from' || key === 'to') render();
-      });
+        syncNumber(key, a);
+        updateReady();
+      }
+      a.addEventListener('input', function () { update(false); });
+      a.addEventListener('change', function () { update(true); });
+      a.addEventListener('blur', function () { update(true); });
     }
     num('[data-sf="count"]', 'count', 1, n);
     num('[data-sf="countn"]', 'count', 1, n);
@@ -4246,6 +4272,27 @@ window.SF_BUILTIN_TXT = "# 📊 资料分析「找数点选」专项训练题库
     7) 动态视口高度回退（老 Safari/老 Android WebView）
 ================================================================== -->
 <style id="rspx-layer" data-layer="responsive-hardening">
+/* 组卷控件：网格/滑块允许收缩，数字框不挤出窄屏，触屏保留原生拖动。 */
+#sf-root .setup-grid > *, #sf-root .setup-page .field { min-width: 0; }
+#sf-root .setup-page .field-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(4.5rem, 5.5rem);
+  gap: .75rem;
+  align-items: center;
+}
+#sf-root .setup-page .field-row input[type="range"] {
+  width: 100%; min-width: 0; margin: 0; min-height: 44px;
+  touch-action: pan-y;
+}
+#sf-root .setup-page .num-input {
+  box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0;
+  min-height: 44px; font-size: 16px;
+}
+#sf-root .setup-page .range-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 360px) {
+  #sf-root .setup-page .range-row { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* 1) 总览页副标题：窄屏允许折行、不裁字 */
 @media (max-width: 700px){
   .kao-sub{ white-space:normal !important; overflow:visible !important; text-overflow:clip !important; }
